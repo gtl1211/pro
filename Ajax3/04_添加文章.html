@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		.container{
+			width: 1200px;
+			margin:5px auto;
+			overflow: hidden;
+		}
+		.left,.right{
+			float: left;
+		}
+		.left{
+			width: 200px;
+		}
+		.right{
+			width: 1000px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		
+		<div class="left">
+			<ul>
+				<li><a href="04_添加文章.html">添加文档</a></li>
+				<li><a href="">所有文档列表</a></li>
+			</ul>
+		</div>
+		<div class="right">
+			文章标题：<input type="text" id="title"><br><br>
+			作者：<input type="text" id="author"><br><br>
+			简介：<input type="text" id="desp"><br><br>
+			文章内容：<textarea name="" id="con" cols="30" rows="10"></textarea><br><br>
+			<button id="btn">确定</button>
+		</div>
+	</div>
+</body>
+<script>
+	document.getElementById("btn").onclick = function(){
+		// 获取值
+		var tit_value = document.getElementById("title").value;
+		var author_value = document.getElementById("author").value;
+		var desp_value = document.getElementById("desp").value;
+		var con_value = document.getElementById("con").value;
+		// 发送到后台
+		// 创建ajax
+		var xhr = (function(){
+			if(window.XMLHttpRequest){
+				return new XMLHttpRequest();
+			}else{
+				return new ActiveXObject("Microsoft.XMLHTTP");
+			}
+		})();
+		xhr.open("post","04_addAritcle.php");
+		xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+		xhr.send('tit='+tit_value+'&author='+author_value+'&desp='+desp_value+'&con='+con_value);
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4){
+				if(xhr.status>=200&&xhr.status<300||xhr.status==304){
+					alert(xhr.responseText);
+					window.location.href = '04_wenzy.html';
+				}
+			}
+		}
+	}
+</script>
+</html>

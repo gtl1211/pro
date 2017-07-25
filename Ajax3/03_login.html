@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<h1>登录页面</h1>
+	用户名：<input type="text" id="uname"><br>
+	密码：<input type="text" id="pwd"><br>
+	<input type="button" id="btn" value="登录">
+</body>
+<script>
+	// 点击登录按钮，验证是否能登录
+	document.getElementById("btn").onclick = function(){
+		// 获取用户名和密码
+		var uname = document.getElementById("uname").value;
+		var pwd = document.getElementById("pwd").value;
+		// 发送到后台
+		var xhr = (function(){
+			if(window.XMLHttpRequest){
+				return new XMLHttpRequest();
+			}else{
+				return new ActiveXObject("Microsoft.XMLHTTP");
+			}
+		})();
+		xhr.open("post","03_login.php");
+		xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+		xhr.send('uname='+uname+'&pwd='+pwd);
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4){
+				if(xhr.status>=200&&xhr.status<300||xhr.status==304){
+					var data = xhr.responseText;
+					// 登录成功，跳转到文章页
+					if(data == '登录成功'){
+						alert("登录成功");
+						window.location.href = '04_wenzy.html';
+					}else if(data == '未注册'){
+						alert("未注册，请注册");
+						window.location.href= '02_ajax连接数据.html';
+					}else{
+						alert("用户名或密码错误");
+						document.getElementById("uname").value = '';
+						document.getElementById("pwd").value = '';
+					}
+					// console.log(data);
+				}
+			}
+		}
+	}
+</script>	
+</html>

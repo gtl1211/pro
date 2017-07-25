@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		.container{
+			width: 1200px;
+			margin:5px auto;
+			overflow: hidden;
+		}
+		.left,.right{
+			float: left;
+		}
+		.left{
+			width: 200px;
+		}
+		.right{
+			width: 1000px;
+		}
+		table{
+			width: 100%;
+			text-align: center;
+		}
+		table tr{
+			height: 30px;
+		}
+		.del,.bj{
+			cursor: pointer;
+		}
+
+		/*弹出框样式*/
+		.tck{
+			position: absolute;
+			width: 500px;
+			border: 1px solid #000;
+			left:200px;
+			top:100px;
+			background:skyblue;
+			display: none;
+		}
+		.tck_close{
+			position: absolute;
+			right:10px;
+			top:10px;
+			height: 10px;
+			width: 10px;
+			cursor:pointer;
+		}
+	</style>
+</head>
+<body>
+	<h1>文章页</h1>
+	<div class="container">
+		<div class="left">
+			<ul>
+				<li><a href="04_添加文章.html">添加文档</a></li>
+				<li><a href="">所有文档列表</a></li>
+			</ul>
+		</div>
+		<div class="right">
+			<table border="1" cellpadding="0" cellspacing="0" id="tab">
+				<tr>
+					<th>ID</th>
+					<th>标题</th>
+					<th>作者</th>
+					<th>简介</th>
+					<th>发布时间</th>
+					<th>操作</th>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	<!-- 弹出框 -->
+	<div class="tck">
+		<p class="tck_close">X</p>
+		文章标题 <input type="text" class="tck_tit"><br><br>
+		作者 <input type="text" class="tck_author"><br><br>
+		简介 <input type="text" class="tck_desp"><br><br>
+		文章内容 <textarea name="" id="" cols="30" rows="10" class="tck_con"></textarea><br><br>
+		<input type="button" value="确定" class="tck_btn">
+	</div>
+</body>
+<script src="js/jquery-1.12.3.min.js"></script>
+<script>
+	// 从数据库中获取数据，添加到页面
+	window.onload = function(){
+		// 创建ajax
+		var xhr = (function(){
+			if(window.XMLHttpRequest){
+				return new XMLHttpRequest();
+			}else{
+				return new ActiveXObject("Microsoft.XMLHTTP");
+			}
+		})();
+		xhr.open("get","04_selectwz.php");
+		
+		xhr.send();
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4){
+				if(xhr.status>=200&&xhr.status<300||xhr.status==304){
+					var data = xhr.responseText;
+					// console.log(data);
+					// 进一步解析
+					data = JSON.parse(data);
+					// 遍历，然后添加到页面
+					var tab = document.getElementById("tab");
+					// 用字符串方法添加
+					var str = '<tr><th>ID</th><th>标题</th><th>作者</th><th>简介</th><th>发布时间</th><th>操作</th></tr>';
+					for(var i in data){
+						var time = new Date(data[i]['date']*1000).toLocaleString();
+						str+="<tr><td class='uid'>"+data[i]['id']+"</td><td><a href=05_内容页.html?id="+data[i]['id']+" class='tit'>"+data[i]['title']+"</a></td><td class='author'>"+data[i]['author']+"</td><td class='description'>"+data[i]['description']+"</td><td class='time'>"+time+"</td><td><span class='del'>删除</span><span class='bj'>编辑</span></td></tr>";
+					}
+					// console.log(str);
+					// 添加到页面中
+					tab.innerHTML = str;
+				}
+			}
+		}
+	}
+
+	// 点击 删除 按钮，删除页面中的这一行，可以通过事件绑定的方法找删除功能
+	$("#tab").on('click','.del',function(){
+		// 点一下，删除一行(tr)  其实是删除当前span的父级的父级元素
+		$(this).parent().parent().fadeOut(1000,function(){
+			$(this).remove();
+		
+			// 把数据库中对应的数据删除
+			// 找到当前行的id值，把这个id发送到后台
+			var uid = $(this).find('.uid').html();
+			// 发送到后台
+			var xhr = (function(){
+				if(window.XMLHttpRequest){
+					return new XMLHttpRequest();
+				}else{
+					return new ActiveXObject("Microsoft.XMLHTTP");
+				}
+			})();
+			xhr.open('post','06_del.php');
+			xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			xhr.send('id='+uid);
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState == 4){
+					if(xhr.status>=200&& xhr.status<300 ||  xhr.status == 304){
+						if(xhr.responseText == 1){
+							alert("删除成功");
+						}else{
+							alert("删除失败");
+						}
+						// console.log(xhr.responseText);
+					}
+				}
+			}
+		});
+	});
+
+
+	// 编辑功能，使用事件委托
+	$("#tab").on('click','.bj',function(){
+		// 首先让弹出框出来，同时显示出当前这条数据的具体内容
+		$(".tck").css('display','block');
+		// 需要从后台获取到数据，添加到表格中
+		// 给后台传id，让后台通过id查询内容
+		var uid = $(this).parent().parent().find('.uid').html();
+		var xhr = (function(){
+			if(window.XMLHttpRequest){
+				return new XMLHttpRequest();
+			}else{
+				return new ActiveXObject("Microsoft.XMLHTTP");
+			}
+		})();
+		xhr.open("get","07_bj.php?uid="+uid);
+		xhr.send();
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4){
+				if(xhr.status>=200&&xhr.status<300||xhr.status==304){
+					// 如果有数据，需要进一步解析，添加到tck这个div中
+					if(xhr.responseText == '没有数据'){
+						alert("查询失败");
+					}else{
+						// 表示得到有效数据，解析使用
+						var data = JSON.parse(xhr.responseText);
+						// 添加到页面
+						$(".tck_tit").val(data['title']);
+						$(".tck_author").val(data['author']);
+						$(".tck_desp").val(data['description']);
+						$(".tck_con").val(data['content']);
+						$(".tck_close").attr('id',uid);
+					}
+				}
+			}
+		}
+	});
+	// 关闭功能
+	$(".tck_close").click(function(){
+		$(this).parent().stop().fadeOut(500);
+	});
+	// 点击弹出框中的 确定 按钮，修改后的数据提交到数据库
+	$(".tck_btn").click(function(){
+		// 把上面input框中的值获取到，然后发送到后台数据库
+		var tck_tit = $(".tck_tit").val();
+		var tck_author = $(".tck_author").val();
+		var tck_desp = $(".tck_desp").val();
+		var tck_con = $(".tck_con").val();
+		var pid = $(".tck_close").attr('id');
+
+		// 发送到后台
+		var xhr = (function(){
+			if(window.XMLHttpRequest){
+				return new XMLHttpRequest();
+			}else{
+				return new ActiveXObject("Microsoft.XMLHTTP");
+			}
+		})();
+		xhr.open("post","07_bj.php");
+		xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+		xhr.send('tit='+tck_tit+'&author='+tck_author+'&desp='+tck_desp+'&con='+tck_con+'&pid='+pid);
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4){
+				if(xhr.status>=200&&xhr.status<300||xhr.status==304){
+					alert(xhr.responseText);
+					$(".tck").css('display','none');
+					// 页面中的数据改变
+					var nowTime = new Date().toLocaleString();
+					// 找到需要修改的这行
+					$("#tab").find('.uid').each(function(){
+						if($(this).html() == pid){
+							console.log('当前行的id为：'+pid);
+							// 通过当前id的td，来找其他的td，更改值
+							var tr = $(this).parent();
+							tr.find('.tit').html(tck_tit);
+							tr.find('.author').html(tck_author);
+							tr.find('.description').html(tck_desp);
+							tr.find('.time').html(nowTime);
+						}
+					})
+					
+				}
+			}
+		}
+	});
+</script>
+</html>

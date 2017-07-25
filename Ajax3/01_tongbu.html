@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	
+</body>
+<script>
+	var xhr = (function(){
+		if(window.XMLHttpRequest){
+		    //高级浏览器
+		   return new XMLHttpRequest();
+		}else{
+		   //ie6及以下
+		   return new ActiveXObject('Microsoft.XMLHTTP');
+		}
+	})();
+
+	// 同步的方式来看下
+	xhr.open('get','01_test.php?name=小白&age=8',true);
+	xhr.send();
+	xhr.onreadystatechange = function(){
+		if(xhr.readyState == 4){
+			if(xhr.status >=200 && xhr.status<300 || xhr.status==304){
+				console.log(xhr.responseText);
+			}
+		}
+	}
+	console.log('aaa');
+</script>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		#tag{
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<!-- 注册功能加验证功能 -->
+	<h1>注册页面</h1>
+	<div class="contanier">
+		<!-- 注册功能 -->
+		<div class="reg">
+			用户名: <input type="text" id="uname" ><br>
+			<span id="tag"></span>
+			密码：	<input type="text" id="pwd" ><br>
+			手机:	<input type="text" id="tel"><br>
+			邮箱:	<input type="text" id="email"><br>
+			<input type="button" value="注册" id="btn">	
+		</div>
+	</div>
+</body>
+<script>
+	// 验证功能：当用户名输入框失去焦点时就要验证这个用户名是否能用
+	var uname = document.getElementById('uname');
+	uname.onblur = function(){
+		// 获取用户输入的用户名，发送到后台验证
+		var uname_value = uname.value;
+		// 创建ajax
+		var xhr = (function(){
+			if(window.XMLHttpRequest){
+				return new XMLHttpRequest();
+			}else{
+				return new ActiveXObject("Microsoft.XMLHTTP");
+			}
+		})();
+		// 连接后台
+		xhr.open("get",'02_yanzheng.php?name='+uname_value);
+		// 发送
+		xhr.send();
+		// 监听
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4){
+				if(xhr.status >=200&& xhr.status<300 || xhr.status==304){
+					var data = xhr.responseText;
+					var tag = document.getElementById("tag");
+					tag.innerHTML = data;
+					tag.style.display = 'block';
+				}
+			}
+		}
+	}
+
+	// 注册功能
+	document.getElementById('btn').onclick = function(){
+		if(document.getElementById('tag').innerHTML == '用户名重复'){
+			alert("用户名重复");
+			return;
+		}
+		// 把所有信息发送到后台，进行注册
+		var name = uname.value;
+		var pwd = document.getElementById("pwd").value;
+		var tel = document.getElementById("tel").value;
+		var email = document.getElementById("email").value;
+		// 创建ajax
+		var xhr = (function(){
+			if(window.XMLHttpRequest){
+				return new XMLHttpRequest();
+			}else{
+				return new ActiveXObject("Microsoft.XMLHTTP");
+			}
+		})();
+		// 连接后台
+		xhr.open("get",'02_zhuce.php?name='+name+'&pwd='+pwd+'&tel='+tel+'&email='+email);
+		// 发送
+		xhr.send();
+		// 监听
+		xhr.onreadystatechange = function(){
+			if(xhr.readyState == 4){
+				if(xhr.status >=200&& xhr.status<300 || xhr.status==304){
+					alert(xhr.responseText);
+					if(xhr.responseText == '注册成功'){
+						window.location.href = '03_login.html';
+					}
+				}
+			}
+		}
+
+	}
+</script>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		.container{
+			width: 1200px;
+			margin:10px auto;
+			border: 1px solid #000;
+		}
+		.tit{
+			text-align: center;
+		}
+		.author{
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="head">
+			<h1 class="tit"><!-- 标题 --></h1>
+			<p class="author"><!-- 小黑 --></p>
+		</div>
+		<div class="content">
+			<p><!-- 那热闹热闹热闹热闹内容内容 --></p>
+		</div>
+	</div>
+</body>
+<script>
+	// 内容页需要具备的功能：
+	// 根据点击的标题来决定显示的内容
+	// 需要知道点击的是哪个标题，获取传来的ID值
+	// 得到ID值后，去数据库中取数据
+	// js中获取地址栏中的ID
+	// location.search这个属性，是保存地址栏中发送的数据
+	var uid = window.location.search;
+	// 把问号去掉
+	uid = uid.slice(1);
+	// 发送ajax，请求数据
+	var xhr = (function(){
+		if(window.XMLHttpRequest){
+			return new XMLHttpRequest();
+		}else{
+			return new ActiveXObject("Microsoft.XMLHTTP");
+		}
+	})();
+	xhr.open('get','05_content.php?'+uid);
+	xhr.send(null);
+	xhr.onreadystatechange = function(){
+		if(xhr.readyState == 4){
+			if(xhr.status>=200&&xhr.status<300  || xhr.status==304){
+				// console.log(xhr.responseText);
+				// 进一步解析，添加到页面
+				// console.log(xhr.responseText);
+				if(xhr.responseText == '没有这条数据'){
+					alert("没有该条数据");
+				}else{
+					var json1 = JSON.parse(xhr.responseText);
+					// 找标签:标题tit  作者author  内容content
+					var tit = document.getElementsByClassName('tit')[0];
+					var author = document.getElementsByClassName('author')[0];
+					var con = document.getElementsByClassName('content')[0].getElementsByTagName('p')[0];
+
+					// 把内容添加到标签中
+					tit.innerHTML = json1['title'];
+					author.innerHTML = json1['author'];
+					con.innerHTML = json1['content'];
+				}
+				
+			}
+		}
+	}
+</script>
+</html>
